@@ -27,8 +27,8 @@ class Predictor(BasePredictor):
     ) -> str:
         """Run a single prediction on the model"""
         sys_message = ''' 
-        You are an AI Medical Assistant trained on a vast dataset of health information. Please be thorough and
-        provide an informative answer. If you don't know the answer to a specific medical inquiry, advise seeking professional help.
+        You are an AI Medical Assistant trained on a vast dataset of health and mental health information. Please be thorough and
+        provide an informative answer. If you don't know the answer to a specific medical inquiry, advise seeking professional help. Do not be much creative.
         '''   
         # Create messages structured for the chat template
         messages = [{"role": "system", "content": sys_message}, {"role": "user", "content": question}]
@@ -36,7 +36,7 @@ class Predictor(BasePredictor):
         # Applying chat template
         prompt = self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
         inputs = self.tokenizer(prompt, return_tensors="pt").to("cuda")
-        outputs = self.model.generate(**inputs, max_new_tokens=100, use_cache=True)
+        outputs = self.model.generate(**inputs, max_new_tokens=1000, use_cache=True)
         
         # Extract and return the generated text, removing the prompt
         response_text = self.tokenizer.batch_decode(outputs)[0].strip()

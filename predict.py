@@ -1,8 +1,10 @@
+from cog import BasePredictor, Input
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 import torch
 
-class Predictor:
-    def __init__(self):
+class Predictor(BasePredictor):
+    def setup(self):
+        """Load the model and tokenizer into memory to make running multiple predictions efficient"""
         model_name = "ruslanmv/Medical-Llama3-8B"
         device_map = 'auto'
         bnb_config = BitsAndBytesConfig(
@@ -20,7 +22,10 @@ class Predictor:
         self.tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
         self.tokenizer.pad_token = self.tokenizer.eos_token
 
-    def askme(self, question):
+    def predict(self,
+                question: str = Input(description="A health-related question for the AI to answer")
+    ) -> str:
+        """Run a single prediction on the model"""
         sys_message = ''' 
         You are an AI Medical Assistant trained on a vast dataset of health information. Please be thorough and
         provide an informative answer. If you don't know the answer to a specific medical inquiry, advise seeking professional help.
@@ -37,6 +42,3 @@ class Predictor:
         response_text = self.tokenizer.batch_decode(outputs)[0].strip()
         answer = response_text.split('assistant')[-1].strip()
         return answer
-
-    def predict(self, question: str) -> str:
-        return self.askme(question)
